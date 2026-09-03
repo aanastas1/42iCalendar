@@ -1,3 +1,5 @@
+import Image from "next/image";
+import { CopyButton } from "@/app/copy-button";
 import { siteUrl } from "@/lib/config";
 
 export default function Home() {
@@ -6,42 +8,63 @@ export default function Home() {
 
   return (
     <main>
-      <header className="hero">
-        <div className="mark" aria-hidden="true">42</div>
-        <div>
-          <p className="eyebrow">Warsaw campus</p>
-          <h1>Put every 42 event and exam in your calendar.</h1>
-          <p className="intro">
-            One read-only subscription. New campus events and exams appear automatically—no manual copying.
-          </p>
-        </div>
+      <header className="masthead">
+        <a className="logo-lockup" href="#top" aria-label="42 Warsaw calendar home">
+          <Image src="/assets/42-warsaw-logo.png" alt="42 Warsaw" width={447} height={447} priority />
+        </a>
+        <p>Campus calendar<br />Warsaw · PL</p>
+        <p className="masthead-date">Events / Exams<br />Live feed</p>
       </header>
 
-      <section className="card" aria-labelledby="all-events-title">
-        <div className="badge">Live calendar</div>
-        <h2 id="all-events-title">All 42 Warsaw events and exams</h2>
-        <p>Includes campus events and scheduled exams, whether or not you joined them in Intra.</p>
-        <div className="actions">
-          <a className="primary" href={webcalUrl}>Subscribe in Apple Calendar</a>
-          <a className="secondary" href={httpsUrl}>Open calendar feed</a>
+      <section className="hero" id="top" aria-labelledby="hero-title">
+        <div className="sun sun-one" aria-hidden="true" />
+        <div className="sun sun-two" aria-hidden="true" />
+        <div className="blue-dot" aria-hidden="true">42</div>
+        <Image className="ink-brush" src="/assets/ink-brush.png" alt="" width={1536} height={1024} priority />
+        <p className="vertical-type" lang="ja" aria-hidden="true">予定</p>
+        <div className="hero-copy">
+          <p className="kicker">Automatic calendar subscription</p>
+          <h1 id="hero-title"><span>Campus</span><span>time.</span><span>Captured.</span></h1>
+          <p className="hero-note">Every Warsaw event.<br />Every scheduled exam.<br />One live calendar.</p>
         </div>
-        <label htmlFor="feed-url">Subscription URL</label>
-        <input id="feed-url" readOnly value={httpsUrl} />
+        <a className="hero-cta" href="#subscribe">Enter the feed <span aria-hidden="true">↓</span></a>
       </section>
 
-      <section className="instructions" aria-labelledby="instructions-title">
-        <p className="eyebrow">Setup</p>
-        <h2 id="instructions-title">Two quick ways to subscribe</h2>
-        <div className="steps">
-          <article><span>Mac</span><p>Calendar → File → New Calendar Subscription, then paste the URL above.</p></article>
-          <article><span>iPhone / iPad</span><p>Calendar → Calendars → Add Calendar → Add Subscription Calendar.</p></article>
-          <article><span>Every device</span><p>Choose iCloud as the calendar location so the subscription follows your Apple Account.</p></article>
+      <section className="subscribe" id="subscribe" aria-labelledby="subscribe-title">
+        <div className="section-index" aria-hidden="true"><span>01</span><span>同期</span></div>
+        <div className="subscribe-copy">
+          <p className="kicker">42 Warsaw × Apple Calendar</p>
+          <h2 id="subscribe-title">Stop checking.<br />Start knowing.</h2>
+          <p className="lede">The feed pulls campus events and exams directly from 42. Subscribe once; new dates arrive automatically.</p>
         </div>
+        <div className="action-panel">
+          <p className="panel-label">Calendar is live</p>
+          <a className="primary" href={webcalUrl}>Subscribe in Apple Calendar <span>↗</span></a>
+          <div className="secondary-actions">
+            <CopyButton url={httpsUrl} />
+            <a href={httpsUrl}>Open .ics feed</a>
+          </div>
+          <div className="url-strip" title={httpsUrl}>{httpsUrl}</div>
+          <p className="privacy-note">Read-only · refreshed every 15 minutes · no login required</p>
+        </div>
+      </section>
+
+      <section className="setup" aria-labelledby="setup-title">
+        <div className="setup-heading">
+          <p className="kicker">Three moves</p>
+          <h2 id="setup-title">Set it.<br />Forget it.</h2>
+        </div>
+        <ol className="steps">
+          <li><span>01</span><strong>Subscribe</strong><p>Tap the red button or paste the feed URL into a new calendar subscription.</p></li>
+          <li><span>02</span><strong>Choose iCloud</strong><p>Save it to iCloud so the same calendar appears on Mac, iPhone and iPad.</p></li>
+          <li><span>03</span><strong>Stay current</strong><p>Apple Calendar refreshes the feed. Joining or leaving still happens in Intra.</p></li>
+        </ol>
       </section>
 
       <footer>
-        <p>This calendar is read-only. Join or leave events in 42 Intra.</p>
-        <p>Personal “events I joined” subscriptions are the next milestone.</p>
+        <p>42 Warsaw Calendar Bridge</p>
+        <p>Public events + exams</p>
+        <p>Personal joined-events feed — next</p>
       </footer>
     </main>
   );
