@@ -35,13 +35,13 @@ FT_CAMPUS_ID=...
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
-Verify the exact Warsaw campus ID instead of guessing it:
+You may leave `FT_CAMPUS_ID` empty at first. Verify the exact Warsaw campus ID instead of guessing it; the command automatically reads `.env.local`:
 
 ```bash
 npm run verify:campus
 ```
 
-Copy the returned `id` into `FT_CAMPUS_ID`. The same response should report the Warsaw timezone.
+Copy the returned `FT_CAMPUS_ID=...` line into `.env.local`. The command also reports the Warsaw timezone.
 
 ## 3. Run locally
 
