@@ -1,4 +1,4 @@
 import type { NextConfig } from "next";
 
-const config: NextConfig = { poweredByHeader: false };
+const config: NextConfig = { agentRules: false, poweredByHeader: false };
 export default config;

@@ -1,5 +1,5 @@
 {
-  "name": "42-icalendar-bridge",
+  "name": "42icalendar",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,9 +9,11 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "verify:campus": "tsx scripts/verify-campus.ts"
+    "verify:campus": "tsx scripts/verify-campus.ts",
+    "db:migrate": "tsx scripts/migrate.ts"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
     "next": "16.3.4",
     "react": "19.2.4",
     "react-dom": "19.2.4"

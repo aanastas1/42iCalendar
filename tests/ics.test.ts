@@ -48,4 +48,12 @@ describe("iCalendar generation", () => {
     expect(output).toContain("UID:42-exam-4242@intra.42.fr");
     expect(output).not.toContain("UID:42-event-4242@intra.42.fr");
   });
+
+  it("marks joined events in the summary, description and categories", () => {
+    const output = generateCalendar("42iCalendar — You Joined", [{ ...event, joined: true }]);
+    const component = new ICAL.Component(ICAL.parse(output)).getFirstSubcomponent("vevent");
+    expect(component?.getFirstPropertyValue("summary")).toBe("✓ YOU JOINED — Café, code; repeat \\");
+    expect(component?.getFirstPropertyValue("description")).toContain("SUBSCRIBED IN 42 INTRA");
+    expect(component?.getFirstPropertyValue("categories")).toContain("SUBSCRIBED");
+  });
 });

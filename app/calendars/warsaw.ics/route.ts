@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 
 export async function GET() {
   try {
-    const calendar = generateCalendar("42 Warsaw — Events & Exams", await getCampusCalendarItems(campusId()));
+    const calendar = generateCalendar("42iCalendar — Warsaw", await getCampusCalendarItems(campusId()));
     return new Response(calendar, {
       status: 200,
       headers: {

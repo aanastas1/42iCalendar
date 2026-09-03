@@ -10,6 +10,7 @@ type TokenResponse = { access_token: string; expires_in: number };
 export type FortyTwoEvent = {
   id: number;
   source?: "event" | "exam";
+  joined?: boolean;
   name: string;
   description?: string | null;
   location?: string | null;
@@ -30,6 +31,13 @@ export type FortyTwoExam = {
   created_at?: string | null;
   updated_at?: string | null;
   projects?: Array<{ name?: string | null }>;
+};
+
+export type FortyTwoMe = {
+  id: number;
+  login: string;
+  campus?: Array<{ id?: number }>;
+  campus_users?: Array<{ campus_id?: number; is_primary?: boolean }>;
 };
 
 export class FortyTwoApiError extends Error {
@@ -210,6 +218,53 @@ export async function getCampusExams(campusId: number): Promise<FortyTwoEvent[]>
 export async function getCampusCalendarItems(campusId: number): Promise<FortyTwoEvent[]> {
   const [events, exams] = await Promise.all([getCampusEvents(campusId), getCampusExams(campusId)]);
   return [...events, ...exams].sort((left, right) => Date.parse(left.begin_at) - Date.parse(right.begin_at));
+}
+
+export async function getUserEvents(userId: number): Promise<FortyTwoEvent[]> {
+  const key = `user:${userId}`;
+  const cached = eventCache.get(key);
+  if (cached && cached.expiresAt > Date.now()) return cached.events;
+  const events = await fetchAllPages(`/v2/users/${userId}/events`);
+  eventCache.set(key, { expiresAt: Date.now() + CACHE_TTL_MS, events });
+  return events;
+}
+
+export async function exchangeAuthorizationCode(code: string, redirectUri: string): Promise<string> {
+  const response = await request(`${API_BASE}/oauth/token`, {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded", accept: "application/json" },
+    body: new URLSearchParams({
+      grant_type: "authorization_code",
+      client_id: env("FT_API_UID"),
+      client_secret: env("FT_API_SECRET"),
+      code,
+      redirect_uri: redirectUri,
+    }),
+    cache: "no-store",
+  });
+  if (!response.ok) throw new FortyTwoApiError(response.status, "42 OAuth token exchange failed");
+  const data = await response.json() as Partial<TokenResponse>;
+  if (!data.access_token) throw new FortyTwoApiError(502, "42 returned an invalid OAuth token response");
+  return data.access_token;
+}
+
+export async function getMe(accessToken: string): Promise<FortyTwoMe> {
+  const response = await request(`${API_BASE}/v2/me`, {
+    headers: { authorization: `Bearer ${accessToken}`, accept: "application/json" },
+    cache: "no-store",
+  });
+  if (!response.ok) throw new FortyTwoApiError(response.status, "42 profile request failed");
+  const me = await response.json() as Partial<FortyTwoMe>;
+  if (!Number.isInteger(me.id) || typeof me.login !== "string") {
+    throw new FortyTwoApiError(502, "42 returned an invalid profile response");
+  }
+  return me as FortyTwoMe;
+}
+
+export function primaryCampusId(me: FortyTwoMe): number | null {
+  const primary = me.campus_users?.find((membership) => membership.is_primary)?.campus_id;
+  const fallback = me.campus?.[0]?.id;
+  return Number.isInteger(primary) ? primary! : Number.isInteger(fallback) ? fallback! : null;
 }
 
 export function clearApiCaches(): void {

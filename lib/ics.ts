@@ -32,7 +32,7 @@ export function formatIcsDate(value: string | Date): string {
 
 function eventLines(event: FortyTwoEvent, generatedAt: Date): string[] {
   const end = event.end_at && Number.isFinite(Date.parse(event.end_at)) ? event.end_at : event.begin_at;
-  const categories = [event.kind, ...(event.themes || []).map((theme) => theme.name)]
+  const categories = [event.joined ? "SUBSCRIBED" : null, event.kind, ...(event.themes || []).map((theme) => theme.name)]
     .filter((value): value is string => Boolean(value));
   const updated = event.updated_at && Number.isFinite(Date.parse(event.updated_at))
     ? event.updated_at
@@ -44,9 +44,12 @@ function eventLines(event: FortyTwoEvent, generatedAt: Date): string[] {
     `LAST-MODIFIED:${formatIcsDate(updated)}`,
     `DTSTART:${formatIcsDate(event.begin_at)}`,
     `DTEND:${formatIcsDate(end)}`,
-    `SUMMARY:${escapeIcs(event.name)}`,
+    `SUMMARY:${escapeIcs(event.joined ? `✓ YOU JOINED — ${event.name}` : event.name)}`,
   ];
-  if (event.description) lines.push(`DESCRIPTION:${escapeIcs(event.description)}`);
+  const description = event.joined
+    ? `SUBSCRIBED IN 42 INTRA${event.description ? `\n\n${event.description}` : ""}`
+    : event.description;
+  if (description) lines.push(`DESCRIPTION:${escapeIcs(description)}`);
   if (event.location) lines.push(`LOCATION:${escapeIcs(event.location)}`);
   if (categories.length) lines.push(`CATEGORIES:${categories.map(escapeIcs).join(",")}`);
   lines.push("END:VEVENT");
@@ -57,7 +60,7 @@ export function generateCalendar(name: string, events: FortyTwoEvent[], generate
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//42 Warsaw Calendar Bridge//EN",
+    "PRODID:-//42iCalendar//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     `X-WR-CALNAME:${escapeIcs(name)}`,

@@ -1,4 +1,10 @@
-type RequiredEnv = "FT_API_UID" | "FT_API_SECRET" | "FT_CAMPUS_ID";
+type RequiredEnv =
+  | "FT_API_UID"
+  | "FT_API_SECRET"
+  | "FT_CAMPUS_ID"
+  | "FT_OAUTH_REDIRECT_URI"
+  | "DATABASE_URL"
+  | "SESSION_SECRET";
 
 export function env(name: RequiredEnv): string {
   const value = process.env[name]?.trim();
@@ -14,4 +20,13 @@ export function campusId(): number {
 
 export function siteUrl(): string {
   return (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
+}
+
+export function secureCookies(): boolean {
+  return siteUrl().startsWith("https://");
+}
+
+export function personalCalendarConfigured(): boolean {
+  return ["FT_OAUTH_REDIRECT_URI", "DATABASE_URL", "SESSION_SECRET"]
+    .every((name) => Boolean(process.env[name]?.trim()));
 }
