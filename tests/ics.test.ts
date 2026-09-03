@@ -42,4 +42,10 @@ describe("iCalendar generation", () => {
     expect(output).toMatch(/\r\n/);
     expect(output.endsWith("\r\n")).toBe(true);
   });
+
+  it("uses a distinct stable UID namespace for exams", () => {
+    const output = generateCalendar("42 Warsaw", [{ ...event, source: "exam" }]);
+    expect(output).toContain("UID:42-exam-4242@intra.42.fr");
+    expect(output).not.toContain("UID:42-event-4242@intra.42.fr");
+  });
 });

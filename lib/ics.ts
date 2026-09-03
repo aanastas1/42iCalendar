@@ -39,7 +39,7 @@ function eventLines(event: FortyTwoEvent, generatedAt: Date): string[] {
     : event.created_at && Number.isFinite(Date.parse(event.created_at)) ? event.created_at : generatedAt;
   const lines = [
     "BEGIN:VEVENT",
-    `UID:42-event-${event.id}@intra.42.fr`,
+    `UID:42-${event.source ?? "event"}-${event.id}@intra.42.fr`,
     `DTSTAMP:${formatIcsDate(generatedAt)}`,
     `LAST-MODIFIED:${formatIcsDate(updated)}`,
     `DTSTART:${formatIcsDate(event.begin_at)}`,
@@ -67,5 +67,5 @@ export function generateCalendar(name: string, events: FortyTwoEvent[], generate
     ...events.flatMap((event) => eventLines(event, generatedAt)),
     "END:VCALENDAR",
   ];
-  return `${lines.map(foldIcsLine).join("\r\n")}\r\n`;
+  return `${lines.map((line) => foldIcsLine(line)).join("\r\n")}\r\n`;
 }

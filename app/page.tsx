@@ -10,17 +10,17 @@ export default function Home() {
         <div className="mark" aria-hidden="true">42</div>
         <div>
           <p className="eyebrow">Warsaw campus</p>
-          <h1>Put every 42 event in your calendar.</h1>
+          <h1>Put every 42 event and exam in your calendar.</h1>
           <p className="intro">
-            One read-only subscription. New campus events appear automatically—no copying, no missed workshops.
+            One read-only subscription. New campus events and exams appear automatically—no manual copying.
           </p>
         </div>
       </header>
 
       <section className="card" aria-labelledby="all-events-title">
         <div className="badge">Live calendar</div>
-        <h2 id="all-events-title">All 42 Warsaw events</h2>
-        <p>Includes every event published for the Warsaw campus, whether or not you joined it in Intra.</p>
+        <h2 id="all-events-title">All 42 Warsaw events and exams</h2>
+        <p>Includes campus events and scheduled exams, whether or not you joined them in Intra.</p>
         <div className="actions">
           <a className="primary" href={webcalUrl}>Subscribe in Apple Calendar</a>
           <a className="secondary" href={httpsUrl}>Open calendar feed</a>

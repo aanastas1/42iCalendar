@@ -1,12 +1,12 @@
 # 42 iCalendar Bridge
 
-A small, read-only calendar feed that brings every 42 Warsaw campus event into Apple Calendar.
+A small, read-only calendar feed that brings every 42 Warsaw campus event and exam into Apple Calendar.
 
 The first working milestone is implemented: **the public Warsaw campus calendar**. A private feed containing only events a student joined is planned as the next milestone.
 
 ## What it does
 
-- Fetches Warsaw events from the official 42 API.
+- Fetches Warsaw events and exams from the official 42 API.
 - Includes events from 30 days ago through 365 days ahead.
 - Converts them to a standards-compliant iCalendar feed.
 - Publishes the feed at `/calendars/warsaw.ics`.
@@ -45,6 +45,8 @@ Copy the returned `FT_CAMPUS_ID=...` line into `.env.local`. The command also re
 
 ## 3. Run locally
 
+Local mode works only while `npm run dev` is running and your Mac is awake. Use it for testing, not for the calendar subscription you keep in Apple Calendar.
+
 ```bash
 npm install
 npm run dev
@@ -59,6 +61,8 @@ http://localhost:3000/calendars/warsaw.ics
 Apple devices need a publicly reachable HTTPS URL for reliable ongoing refreshes, so use the deployed Vercel URL for the real subscription.
 
 ## 4. Deploy to Vercel
+
+Vercel runs the feed online, so Apple Calendar can refresh it even when your Mac is off.
 
 1. Push this repository to GitHub.
 2. Import the repository in Vercel.
@@ -101,7 +105,8 @@ The tests parse the generated feed with an independent iCalendar parser and cove
 ## Troubleshooting
 
 - **401 or “temporarily unavailable”:** verify the application UID and secret.
-- **Empty calendar:** confirm `FT_CAMPUS_ID` is the Warsaw campus and that events exist in the configured date window.
+- **Empty calendar:** confirm `FT_CAMPUS_ID` is the Warsaw campus and that events or exams exist in the configured date window.
+- **Calendar stops updating when the Mac is off:** the subscription still points to `localhost`. Deploy to Vercel and subscribe again using the HTTPS Vercel URL.
 - **Old events remain visible:** use **View → Refresh Calendars** on Mac and check the subscription auto-refresh setting.
 - **Wrong event time:** events are emitted as UTC instants; Apple Calendar displays them in the device timezone.
 - **429 errors:** the 42 API rate limit was reached. The endpoint returns a temporary error and succeeds again after the limit resets.

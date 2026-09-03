@@ -1,12 +1,12 @@
 import { campusId } from "@/lib/config";
-import { FortyTwoApiError, getCampusEvents } from "@/lib/forty-two";
+import { FortyTwoApiError, getCampusCalendarItems } from "@/lib/forty-two";
 import { generateCalendar } from "@/lib/ics";
 
 export const runtime = "nodejs";
 
 export async function GET() {
   try {
-    const calendar = generateCalendar("42 Warsaw — All Events", await getCampusEvents(campusId()));
+    const calendar = generateCalendar("42 Warsaw — Events & Exams", await getCampusCalendarItems(campusId()));
     return new Response(calendar, {
       status: 200,
       headers: {

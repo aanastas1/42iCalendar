@@ -1,7 +1,7 @@
 import ICAL from "ical.js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const getCampusEvents = vi.fn();
+const getCampusCalendarItems = vi.fn();
 
 vi.mock("@/lib/config", () => ({ campusId: () => 81 }));
 vi.mock("@/lib/forty-two", () => ({
@@ -10,14 +10,14 @@ vi.mock("@/lib/forty-two", () => ({
       super(message);
     }
   },
-  getCampusEvents,
+  getCampusCalendarItems,
 }));
 
 describe("Warsaw calendar HTTP route", () => {
-  beforeEach(() => getCampusEvents.mockReset());
+  beforeEach(() => getCampusCalendarItems.mockReset());
 
   it("returns a parseable calendar response", async () => {
-    getCampusEvents.mockResolvedValueOnce([{
+    getCampusCalendarItems.mockResolvedValueOnce([{
       id: 7,
       name: "Warsaw workshop",
       begin_at: "2026-09-10T10:00:00.000Z",
@@ -34,11 +34,11 @@ describe("Warsaw calendar HTTP route", () => {
     expect(response.headers.get("cache-control")).toContain("s-maxage=900");
     expect(calendar.getFirstSubcomponent("vevent")?.getFirstPropertyValue("uid"))
       .toBe("42-event-7@intra.42.fr");
-    expect(getCampusEvents).toHaveBeenCalledWith(81);
+    expect(getCampusCalendarItems).toHaveBeenCalledWith(81);
   });
 
   it("returns a sanitized no-store error when 42 is unavailable", async () => {
-    getCampusEvents.mockRejectedValueOnce(new Error("secret upstream response"));
+    getCampusCalendarItems.mockRejectedValueOnce(new Error("secret upstream response"));
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
     const { GET } = await import("@/app/calendars/warsaw.ics/route");
     const response = await GET();

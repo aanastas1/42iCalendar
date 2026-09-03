@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import { eventDateWindow, fetchAllPages, isFortyTwoEvent } from "@/lib/forty-two";
+import {
+  eventDateWindow,
+  fetchAllPages,
+  fetchExamPages,
+  isFortyTwoEvent,
+} from "@/lib/forty-two";
 
 const validEvent = (id: number) => ({
   id,
@@ -42,5 +47,21 @@ describe("42 events adapter", () => {
   it("rejects a non-array API response", async () => {
     await expect(fetchAllPages("/events", new Date(), async () => ({ error: true })))
       .rejects.toThrow("invalid events list");
+  });
+
+  it("fetches Warsaw exams with campus and date filters", async () => {
+    const loader = vi.fn().mockResolvedValueOnce([{
+      id: 30898,
+      name: "Student Exam",
+      begin_at: "2026-10-01T13:00:00.000Z",
+      end_at: "2026-10-01T16:00:00.000Z",
+      location: "42 Warsaw | Cluster 1",
+    }]);
+    const exams = await fetchExamPages(81, new Date("2026-09-03T00:00:00Z"), loader);
+
+    expect(exams).toHaveLength(1);
+    expect(loader.mock.calls[0][0]).toContain("/v2/exams?");
+    expect(loader.mock.calls[0][0]).toContain("filter%5Bcampus_id%5D=81");
+    expect(loader.mock.calls[0][0]).toContain("range%5Bbegin_at%5D=");
   });
 });

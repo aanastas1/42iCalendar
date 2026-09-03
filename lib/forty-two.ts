@@ -9,6 +9,7 @@ type TokenResponse = { access_token: string; expires_in: number };
 
 export type FortyTwoEvent = {
   id: number;
+  source?: "event" | "exam";
   name: string;
   description?: string | null;
   location?: string | null;
@@ -18,6 +19,17 @@ export type FortyTwoEvent = {
   created_at?: string | null;
   updated_at?: string | null;
   themes?: Array<{ name?: string | null }>;
+};
+
+export type FortyTwoExam = {
+  id: number;
+  name: string;
+  begin_at: string;
+  end_at?: string | null;
+  location?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  projects?: Array<{ name?: string | null }>;
 };
 
 export class FortyTwoApiError extends Error {
@@ -111,6 +123,10 @@ export function isFortyTwoEvent(value: unknown): value is FortyTwoEvent {
     typeof event.begin_at === "string" && Number.isFinite(Date.parse(event.begin_at));
 }
 
+export function isFortyTwoExam(value: unknown): value is FortyTwoExam {
+  return isFortyTwoEvent(value);
+}
+
 export async function fetchAllPages(
   basePath: string,
   now = new Date(),
@@ -136,6 +152,32 @@ export async function fetchAllPages(
   throw new FortyTwoApiError(502, "42 event pagination exceeded the safety limit");
 }
 
+export async function fetchExamPages(
+  campusId: number,
+  now = new Date(),
+  load: (path: string) => Promise<unknown> = authorizedJson,
+): Promise<FortyTwoExam[]> {
+  const { from, to } = eventDateWindow(now);
+  const exams: FortyTwoExam[] = [];
+  for (let page = 1; page <= 100; page += 1) {
+    const params = new URLSearchParams({
+      "filter[campus_id]": String(campusId),
+      "range[begin_at]": `${from},${to}`,
+      sort: "begin_at",
+      "page[number]": String(page),
+      "page[size]": String(PAGE_SIZE),
+    });
+    const batch = await load(`/v2/exams?${params}`);
+    if (!Array.isArray(batch)) throw new FortyTwoApiError(502, "42 returned an invalid exams list");
+    for (const candidate of batch) {
+      if (isFortyTwoExam(candidate)) exams.push(candidate);
+      else console.warn("Skipped one malformed 42 exam");
+    }
+    if (batch.length < PAGE_SIZE) return exams;
+  }
+  throw new FortyTwoApiError(502, "42 exam pagination exceeded the safety limit");
+}
+
 export async function getCampusEvents(campusId: number): Promise<FortyTwoEvent[]> {
   const key = `campus:${campusId}`;
   const cached = eventCache.get(key);
@@ -143,6 +185,31 @@ export async function getCampusEvents(campusId: number): Promise<FortyTwoEvent[]
   const events = await fetchAllPages(`/v2/campus/${campusId}/events`);
   eventCache.set(key, { expiresAt: Date.now() + CACHE_TTL_MS, events });
   return events;
+}
+
+export async function getCampusExams(campusId: number): Promise<FortyTwoEvent[]> {
+  const key = `exams:${campusId}`;
+  const cached = eventCache.get(key);
+  if (cached && cached.expiresAt > Date.now()) return cached.events;
+  const exams = (await fetchExamPages(campusId)).map((exam): FortyTwoEvent => {
+    const projects = Array.isArray(exam.projects)
+      ? exam.projects.map((project) => project?.name).filter((name): name is string => Boolean(name))
+      : [];
+    return {
+      ...exam,
+      source: "exam",
+      kind: "exam",
+      description: projects.length ? `Projects: ${projects.join(", ")}` : "42 exam",
+      themes: [],
+    };
+  });
+  eventCache.set(key, { expiresAt: Date.now() + CACHE_TTL_MS, events: exams });
+  return exams;
+}
+
+export async function getCampusCalendarItems(campusId: number): Promise<FortyTwoEvent[]> {
+  const [events, exams] = await Promise.all([getCampusEvents(campusId), getCampusExams(campusId)]);
+  return [...events, ...exams].sort((left, right) => Date.parse(left.begin_at) - Date.parse(right.begin_at));
 }
 
 export function clearApiCaches(): void {
