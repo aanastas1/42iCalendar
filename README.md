@@ -1,3 +1,5 @@
+By the way... I had a real problem with swinging 42 with my work and university. So, I decided to prompt the solution with Japan inspired web site. Looks nice, doesn't it? 
+
 # 42iCalendar
 
 42iCalendar publishes two read-only Apple Calendar subscriptions for 42 Warsaw:
