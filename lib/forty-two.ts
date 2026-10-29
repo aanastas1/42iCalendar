@@ -81,7 +81,11 @@ export async function getAppToken(forceRefresh = false): Promise<string> {
       }),
       cache: "no-store",
     });
-    if (!response.ok) throw new FortyTwoApiError(response.status, "42 authentication failed");
+    if (!response.ok) {
+      // The token response body never contains credentials, so its start is safe to log.
+      const detail = (await response.text().catch(() => "")).replace(/\s+/g, " ").slice(0, 160);
+      throw new FortyTwoApiError(response.status, `42 authentication failed (HTTP ${response.status}): ${detail}`);
+    }
     const data = (await response.json()) as Partial<TokenResponse>;
     if (!data.access_token || !Number.isFinite(data.expires_in)) {
       throw new FortyTwoApiError(502, "42 returned an invalid token response");
